@@ -24,7 +24,6 @@ def fill_grid(grid):
     for row in grid:
         for i, num in enumerate(row):
             if num == None:
-                # row[i] = {'val': 0, 'real': False}
                 row[i] = {'val': randint(1, 9), 'real': False}
     return grid
 
@@ -37,6 +36,7 @@ def get_sums(grid):
         row_sum = 0
         for num in rows:
             if num['real']:
+                # Append the number val to sums list if the number 'real' value is True
                 row_sum += num['val']
         sums[0].append(row_sum)
 
@@ -52,30 +52,34 @@ def get_sums(grid):
 
 def display_grid(grid, row_sums, col_sums):
     '''Display the current grid with row/column numbers and the sums of rows/columns '''
+    # Display the column numbers above the grid - 'center(2)' aligns the value to the left of a 2 character space
     console.print('   ', *[str(num).center(2)
                   for num in range(1, len(grid)+1)])
+    # Display a dashed line to form top of grid
     console.print('  ┌' + '-'*3*len(grid) + '-┐')
+
     for i, row in enumerate(grid):
         nums_in_row = []
-        # for num in row:
-        #     nums_in_row.append(num['val'])
-        # console.print(i+1, "|", *
-        #               [f'{num:<2}' for num in nums_in_row], "|", f"[blue]{row_sums[i]}[/blue]")
         for num in row:
             val = str(num['val']).center(2)
             if num['real'] and num['found']:
+                # Make the number green if its already found
                 val = f'[bold green4]{val}[/bold green4]'
+            # Create a list of all numbers in the row with formatting
             nums_in_row.append(val)
         console.print(i+1, "|", *nums_in_row, "|",
-                      f"[blue]{row_sums[i]}[/blue]")
+                      f"[blue]{row_sums[i]}[/blue]")  # Print row number, all numbers in row, and sum of numbers in row
 
+    # Print dashed line below grid
     console.print('  └' + '-'*3*len(grid) + '-┘')
+    # Print sums of each column
     console.print('   ', *[str(num).center(2)
                   for num in col_sums], style='blue')
 
 
 def intro():
-    console.print("Welcome!")
+    '''Welcome the user and provide instruction on how to play'''
+    console.print("Welcome to the game!")
     choice = input("Would you like to see the game instructions? Yes or No ")
     if choice.lower() == "yes":
         console.print("""
@@ -94,19 +98,23 @@ Good luck!
 
 
 def play_turn(grid, sums):
-    # console.print("Here is your grid:")
+    '''Function to take the command from the user and edit the grid depending on the input'''
     display_grid(grid, sums[0], sums[1])
     while True:
         try:
             user_input = input("What is your command? ")
             if user_input.lower() == 'quit':
+                # Exit program
                 sys.exit()
+            # Split the user's input into the command, row and column
             cmd, row, col = user_input.split()
+            # -1 to make the input work as a list index
             row = int(row)-1
             col = int(col)-1
             if cmd.lower() == 'mark':
                 console.clear()
                 if grid[row][col]['real']:
+                    # Set the number's 'found' value to True
                     grid[row][col]['found'] = True
                     console.print('Correct!', style='bold green4')
                 else:
@@ -116,6 +124,7 @@ def play_turn(grid, sums):
             elif cmd.lower() == 'clear':
                 console.clear()
                 if not grid[row][col]['real']:
+                    # Set the number value to a blank space to remove it from the grid
                     grid[row][col]['val'] = " "
                     console.print('Correct!', style='bold green4')
 
@@ -127,18 +136,22 @@ def play_turn(grid, sums):
                 raise ValueError
 
         except (ValueError, IndexError):
+            # Catch any errors due to an invalid input
             console.print("Invalid input, please try again.")
 
 
 def check_finish(grid):
+    '''Check if every real value in the grid has been found'''
     for row in grid:
         for num in row:
             if num['real'] and not num['found']:
+                # Return False if any real value is not found
                 return False
     return True
 
 
 def get_size():
+    '''Get the user's choice for the size of grid'''
     while True:
         size = input(
             "What size grid would you like to play? Enter a value between 3 and 10: ")
@@ -150,8 +163,8 @@ def get_size():
             console.print("Invalid input, please try again")
 
 
-def outro_message(grid, sums):
-    display_grid(grid, sums[0], sums[1])
+def outro_message():
+    '''Print winning message and ask if the user wants to play again'''
     console.print("You win!")
     choice = input("Would you like to play again? Yes or No: ")
     return True if choice.lower() == 'yes' else False
@@ -162,22 +175,19 @@ def main():
     intro()
     play = True
     while play:
-
+        # Loop while the user keeps wanting to play
         size = get_size()
-        # console.clear()
         grid = create_grid(size)
         grid = fill_grid(grid)
         sums = get_sums(grid)
 
         finish = False
         while not finish:
-
+            # Loop for each game
             play_turn(grid, sums)
             finish = check_finish(grid)
-            # console.clear()
-        play = outro_message(grid, sums)
+        display_grid(grid, sums[0], sums[1])
+        play = outro_message()
 
 
 main()
-
-# rconsole.print("[bold green4]Hello World")
